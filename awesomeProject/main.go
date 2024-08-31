@@ -6,6 +6,7 @@ import (
 	"awesomeProject/internal/handlers"
 	"awesomeProject/internal/repositories"
 	"awesomeProject/internal/services"
+	"database/sql"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -15,20 +16,27 @@ import (
 func main() {
 	router := gin.Default()
 
-	logger, err := zap.NewProduction()
-	if err != nil {
-		panic(err)
-	}
+	logger := config.InitLogger()
 	defer logger.Sync()
 
 	database := config.InitDB()
 	defer database.Close()
 
-	sugar := logger.Sugar()
+	router = setupSwagger(router)
+	router = setupUserRoutes(database, logger, router)
 
+	router.Run("localhost:8080")
+}
+
+func setupSwagger(router *gin.Engine) *gin.Engine {
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	return router
+}
+
+func setupUserRoutes(database *sql.DB, sugar *zap.SugaredLogger, router *gin.Engine) *gin.Engine {
 	var userRepository = repositories.NewUserRepository(database, sugar)
 	userService := services.NewUserService(userRepository, sugar)
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	userHandler := handlers.NewUserHandler(userService, sugar)
 
@@ -39,5 +47,5 @@ func main() {
 	router.PUT("/user/:id", userHandler.UpdateUser)
 	router.GET("/user/all/books", userHandler.GetAll)
 
-	router.Run("localhost:8080")
+	return router
 }
