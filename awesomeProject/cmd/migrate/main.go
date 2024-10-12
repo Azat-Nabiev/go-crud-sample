@@ -1,4 +1,4 @@
-package config
+package main
 
 import (
 	"database/sql"
@@ -10,7 +10,12 @@ import (
 	"os"
 )
 
-func InitDB() *sql.DB {
+func main() {
+	database := initDB()
+	defer database.Close()
+}
+
+func initDB() *sql.DB {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -53,9 +58,9 @@ func InitDB() *sql.DB {
 		log.Fatal("Error pinging the database: ", err)
 	}
 
-	//if err = executeMigration(db); err != nil {
-	//	log.Fatal("Error during migrating scripts", err)
-	//}
+	if err = executeMigration(db); err != nil {
+		log.Fatal("Error during migrating scripts", err)
+	}
 
 	log.Println("Successfully connected to the database")
 	return db

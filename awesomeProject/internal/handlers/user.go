@@ -38,7 +38,7 @@ func (h *UserHandler) GetAllUsers(c *gin.Context) {
 
 	users, _ := h.userService.GetAll(ctx)
 
-	c.JSON(200, users)
+	c.JSON(http.StatusOK, users)
 }
 
 // GetAllBooks godoc
@@ -56,7 +56,7 @@ func (h *UserHandler) GetAll(c *gin.Context) {
 
 	users, _ := h.userService.GetAllUserBooks(ctx)
 
-	c.JSON(200, users)
+	c.JSON(http.StatusOK, users)
 }
 
 // GetUser godoc
@@ -104,7 +104,7 @@ func (h *UserHandler) AddUser(c *gin.Context) {
 	var newUser models.User
 
 	if err := c.ShouldBindJSON(&newUser); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -113,7 +113,7 @@ func (h *UserHandler) AddUser(c *gin.Context) {
 
 	h.userService.Add(ctx, &newUser)
 
-	c.JSON(201, newUser)
+	c.JSON(http.StatusCreated, newUser)
 }
 
 // GetUser godoc
@@ -166,11 +166,11 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 
 	var newUser models.User
 	if err := c.BindJSON(&newUser); err != nil {
-		c.JSON(400, gin.H{"error": "Invalid user data"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user data"})
 		return
 	}
 
 	updatedUser, err := h.userService.Update(ctx, userID, &newUser)
 
-	c.JSON(201, updatedUser)
+	c.JSON(http.StatusCreated, updatedUser)
 }
