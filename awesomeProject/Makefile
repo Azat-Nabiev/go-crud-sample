@@ -1,6 +1,7 @@
 APP_NAME := myapp
 MIGRATION_NAME := migrations
 BUILD_DIR := build
+COMPOSE_FILE=docker-compose.yml
 
 build-api:
 	go build -o $(BUILD_DIR)/$(APP_NAME) ./cmd/awesomeProject/main.go
@@ -18,7 +19,18 @@ migrate: build-migrations
 	@echo "Add migrations..."
 	@bash -c "set -a && source .env && set +a && ./$(BUILD_DIR)/$(MIGRATION_NAME)"
 
-.PHONY: build build-api build-migrations run migrate
+docker-up:
+	docker-compose -f $(COMPOSE_FILE) up -d
+
+docker-down:
+	docker-compose -f $(COMPOSE_FILE) down
+
+docker-restart: docker-down docker-up
+
+docker-logs:
+	docker-compose -f $(COMPOSE_FILE) logs
+
+.PHONY: build build-api build-migrations run migrate docker-up docker-down docker-logs docker-restart
 
 
 
